@@ -1,6 +1,6 @@
 # neuro-lingo
 
-A language where you only implement comments and types, and let LLMs deal with the rest.
+A language where you only implement comments and types, and let LLMs deal with the rest. LLMs don't always provide workable examples, so your comments need to really match what you're trying to implement.
 
 ## Filenames
 
