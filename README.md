@@ -50,7 +50,10 @@ type Person = {
 
 # Installing
 
-Clone the repo and run ts-node src/cli.ts
+Clone the repo and run ts-node src/cli.ts.
+
+Create an .env file with your OPENAI_API_KEY.
+You can also set OPENAI_GPT_MODEL to use an alternative model. The default is gpt-3.5-turbo.
 
 ## Using the CLI
 
