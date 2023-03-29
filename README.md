@@ -48,6 +48,22 @@ type Person = {
 };
 ```
 
+## Acknowledging a user
+
+```typescript
+type Person = {
+  name: string;
+};
+
+function greeting(user: Person): string {
+  // return and say hi to the user
+}
+
+function main() {
+  // greet a user with the name "Noah"
+}
+```
+
 # Installing
 
 Clone the repo and run ts-node src/cli.ts.
