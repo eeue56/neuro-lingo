@@ -6,8 +6,7 @@ function generateArg(name: string, type_: string): string {
 }
 
 async function generateNeuroFunction(func: NeuroFunction): Promise<string> {
-  const prompt =
-    "Auto complete this TypeScript function as purely plain TypeScript, no wrapping or explaining text. Only complete the function given and assume others are implemented. Do not wrap the code in markdown.";
+  const prompt = `Auto complete only the TypeScript function ${func.name} as purely plain TypeScript, no wrapping or explaining text. Only complete the function given and assume others are implemented. Do not wrap the code in markdown.`;
   const content = `
 function ${func.name}(${func.args
     .map((arg) => generateArg(arg.name, arg.type_))
