@@ -63,3 +63,9 @@ You can also set OPENAI_GPT_MODEL to use an alternative model. The default is gp
   -h, --help :          This help text
   --run :               Run the file after generating it
 ```
+
+# Notes
+
+You can modify the prompts in [src/generate.ts](src/generator.ts) to your liking - if you find a better one, please open a pull request.
+
+neuro-lingo is absolutely not recommened for use in productiong. It is a thought exercise which just so happens to have a functioning compiler.
