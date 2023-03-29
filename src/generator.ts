@@ -1,5 +1,8 @@
+import * as dotenv from "dotenv";
 import { openai } from "./OpenAi";
 import { Construct, NeuroFunction, Program, TypeDefinition } from "./parser";
+
+dotenv.config();
 
 function generateArg(name: string, type_: string): string {
   return `${name}: ${type_}`;
