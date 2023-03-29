@@ -64,6 +64,12 @@ function main() {
 }
 ```
 
+when run produces
+
+```
+Hi Noah, nice to meet you!
+```
+
 # Installing
 
 Clone the repo and run ts-node src/cli.ts.
