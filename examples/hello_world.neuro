@@ -1,0 +1,12 @@
+type Person = {
+    name: string;
+}
+
+function add(a: number, b: number): number {
+    // Add two numbers together
+}
+
+function main() {
+    // Print "Hello World" to the console
+    // Print the result of add(2, 3)
+}

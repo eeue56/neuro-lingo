@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@eeue56/baner": "^0.0.3",
+    "dotenv": "^16.0.3",
+    "openai": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11"
+  }
+}
