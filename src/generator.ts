@@ -54,7 +54,8 @@ function ${func.name}(${func.args
       ...otherMessages,
       { role: "user", content: content },
     ],
-    n: 3,
+    temperature: 1,
+    n: 1,
   });
 
   let message: string | undefined = completion.data.choices[0].message?.content;
