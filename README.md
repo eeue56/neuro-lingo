@@ -70,6 +70,16 @@ when run produces
 Hi Noah, nice to meet you!
 ```
 
+## Pinning a function
+
+In order to use a previous implementation from the LLM, you can use the pinned keyword which will attempt to look up the previous implementation of that function. For consistent results I recommend git-adding the build files along with `pinned`.
+
+```typescript
+pinned function main() {
+    // greet a user with the name "Noah"
+}
+```
+
 # Installing
 
 Clone the repo and run ts-node src/cli.ts.

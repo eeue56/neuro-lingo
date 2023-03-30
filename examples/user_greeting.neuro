@@ -6,6 +6,6 @@ function greeting(user: Person): string {
     // return and say hi to the user
 }
 
-function main() {
+pinned function main() {
     // greet a user with the name "Noah"
 }

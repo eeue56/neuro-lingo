@@ -43,9 +43,11 @@ async function main() {
   }
 
   const fileName: string = (fileNameFlag.arguments.value as string) || "";
+  const outputFileName = "build/" + path.basename(fileName) + ".ts";
 
   const contents = await readFile(fileName, "utf-8");
-  const program = parseFile(contents);
+  const generatedContents = await readFile(outputFileName, "utf-8");
+  const program = parseFile(contents, generatedContents);
 
   //   if (2 > 1) return;
 
@@ -64,8 +66,6 @@ async function main() {
     await mkdir("build");
   } catch (e) {}
   const code = await generateProgram(program.value);
-
-  const outputFileName = "build/" + path.basename(fileName) + ".ts";
 
   if (!cliProgram.flags["quiet"].isPresent) {
     console.log("Writing to", outputFileName);

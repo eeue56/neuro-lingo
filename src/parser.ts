@@ -12,12 +12,21 @@ export type NeuroFunction = {
   returnType: string;
 };
 
+export type PinnedNeuroFunction = {
+  kind: "PinnedNeuroFunction";
+  name: string;
+  args: Argument[];
+  comment: string;
+  returnType: string;
+  body: string;
+};
+
 export type TypeDefinition = {
   kind: "TypeDefinition";
   body: string;
 };
 
-export type Construct = NeuroFunction | TypeDefinition;
+export type Construct = NeuroFunction | PinnedNeuroFunction | TypeDefinition;
 
 export type Ok<value> = {
   kind: "Ok";
@@ -65,6 +74,10 @@ function parseFunction(lines: string[]): ParsingResult<NeuroFunction, string> {
         type_: type_,
       };
     });
+
+  args = args.filter((arg) => {
+    return arg.name.trim().length > 0;
+  });
 
   let returnType = "void";
   const maybeReturnType = functionAndTypeLine.match(
@@ -125,11 +138,11 @@ export type Program = {
   blocks: Construct[];
 };
 
-export function parseFile(
-  fileContents: string
-): ParsingResult<Program, string> {
-  const lines = fileContents.split("\n");
-  const blocks: ParsingResult<Construct, string>[] = [];
+function findPinnedFunction(
+  func: NeuroFunction,
+  generatedFileContents: string
+): ParsingResult<NeuroFunction | PinnedNeuroFunction, string> {
+  const lines = generatedFileContents.split("\n");
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -145,7 +158,67 @@ export function parseFile(
           value: "Failed to find closing bracket for function " + line,
         };
       } else {
-        blocks.push(parseFunction(lines.slice(i, i + endLineIndex + 1)));
+        let functionName = "";
+        const maybeFunctionName = line.match(/function (.+)\(/);
+        if (!maybeFunctionName) {
+          return {
+            kind: "Err",
+            value: "Failed to find function name in " + line,
+          };
+        }
+        functionName = maybeFunctionName[1];
+
+        console.log(functionName, func.name);
+
+        if (functionName === func.name) {
+          console.log("Found the function");
+          return {
+            kind: "Ok",
+            value: {
+              ...func,
+              kind: "PinnedNeuroFunction",
+              body: lines.slice(i, i + endLineIndex + 1).join("\n"),
+            },
+          };
+        }
+        i = i + endLineIndex + 1;
+      }
+    }
+  }
+  return {
+    kind: "Ok",
+    value: func,
+  };
+}
+
+export function parseFile(
+  fileContents: string,
+  generatedFileContents: string
+): ParsingResult<Program, string> {
+  const lines = fileContents.split("\n");
+  const blocks: ParsingResult<Construct, string>[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line.trim().length === 0) continue;
+
+    if (line.startsWith("function") || line.startsWith("pinned function")) {
+      const endLineIndex = findClosingBracket(lines.slice(i, lines.length));
+
+      if (endLineIndex === -1) {
+        return {
+          kind: "Err",
+          value: "Failed to find closing bracket for function " + line,
+        };
+      } else {
+        const func = parseFunction(lines.slice(i, i + endLineIndex + 1));
+        if (func.kind === "Ok" && line.startsWith("pinned")) {
+          const pinned = findPinnedFunction(func.value, generatedFileContents);
+          blocks.push(pinned);
+        } else {
+          blocks.push(func);
+        }
         i = i + endLineIndex + 1;
       }
     } else if (line.startsWith("type")) {

@@ -1,6 +1,12 @@
 import * as dotenv from "dotenv";
 import { openai } from "./OpenAi";
-import { Construct, NeuroFunction, Program, TypeDefinition } from "./parser";
+import {
+  Construct,
+  NeuroFunction,
+  PinnedNeuroFunction,
+  Program,
+  TypeDefinition,
+} from "./parser";
 
 dotenv.config();
 
@@ -9,10 +15,14 @@ function generateArg(name: string, type_: string): string {
 }
 
 function generateNeuroFunctionTypeSignature(func: NeuroFunction): string {
+  if (func.args.length === 0) {
+    return `function ${func.name}(): ${func.returnType || "void"} {
+}`;
+  }
   return `function ${func.name}(${func.args
     .map((arg) => generateArg(arg.name, arg.type_))
     .join(",")}): ${func.returnType || "void"} {
-    }`;
+}`;
 }
 
 async function generateNeuroFunction(
@@ -35,6 +45,12 @@ function ${func.name}(${func.args
           return {
             role: "user",
             content: generateNeuroFunctionTypeSignature(construct),
+          };
+        }
+        case "PinnedNeuroFunction": {
+          return {
+            role: "user",
+            content: construct.body,
           };
         }
         case "TypeDefinition": {
@@ -68,6 +84,13 @@ function ${func.name}(${func.args
   return message || "";
 }
 
+async function generatePinnedNeuroFunction(
+  func: PinnedNeuroFunction,
+  otherBlocks: Construct[]
+): Promise<string> {
+  return func.body;
+}
+
 async function generateTypeDefinition(
   typeDefinition: TypeDefinition
 ): Promise<string> {
@@ -81,6 +104,9 @@ async function generateConstruct(
   switch (construct.kind) {
     case "NeuroFunction": {
       return await generateNeuroFunction(construct, otherBlocks);
+    }
+    case "PinnedNeuroFunction": {
+      return await generatePinnedNeuroFunction(construct, otherBlocks);
     }
     case "TypeDefinition": {
       return await generateTypeDefinition(construct);
@@ -98,7 +124,11 @@ export async function generateProgram(program: Program): Promise<string> {
       ...program.blocks.slice(i + 1, program.blocks.length),
     ];
     const generatedBlock = await generateConstruct(block, otherBlocks);
-    if (block.kind === "NeuroFunction" && block.name === "main") {
+    if (
+      (block.kind === "NeuroFunction" ||
+        block.kind === "PinnedNeuroFunction") &&
+      block.name === "main"
+    ) {
       hasMain = true;
     }
     outBlocks.push(generatedBlock);
