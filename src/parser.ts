@@ -168,10 +168,7 @@ function findPinnedFunction(
         }
         functionName = maybeFunctionName[1];
 
-        console.log(functionName, func.name);
-
         if (functionName === func.name) {
-          console.log("Found the function");
           return {
             kind: "Ok",
             value: {
