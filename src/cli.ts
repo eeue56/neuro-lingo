@@ -46,7 +46,10 @@ async function main() {
   const outputFileName = "build/" + path.basename(fileName) + ".ts";
 
   const contents = await readFile(fileName, "utf-8");
-  const generatedContents = await readFile(outputFileName, "utf-8");
+  let generatedContents = "";
+  try {
+    generatedContents = await readFile(outputFileName, "utf-8");
+  } catch (e) {}
   const program = parseFile(contents, generatedContents);
 
   //   if (2 > 1) return;
