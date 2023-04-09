@@ -26,7 +26,17 @@ export type TypeDefinition = {
   body: string;
 };
 
-export type Construct = NeuroFunction | PinnedNeuroFunction | TypeDefinition;
+export type UnionTypeDefinition = {
+  kind: "UnionTypeDefinition";
+  name: string;
+  tags: string[];
+};
+
+export type Construct =
+  | NeuroFunction
+  | PinnedNeuroFunction
+  | TypeDefinition
+  | UnionTypeDefinition;
 
 export type Ok<value> = {
   kind: "Ok";
@@ -121,11 +131,44 @@ function parseTypeDefinition(
   };
 }
 
+function parseUnionTypeDefinition(
+  lines: string[]
+): ParsingResult<UnionTypeDefinition, string> {
+  const joinedLines = lines.join("\n");
+  const splitOnAssign = joinedLines.split("=");
+  const name = splitOnAssign[0].split("union type")[1].trim();
+  const tags = splitOnAssign
+    .slice(1, splitOnAssign.length)
+    .join("=")
+    .split("|")
+    .map((tag) => tag.trim());
+  return {
+    kind: "Ok",
+    value: {
+      kind: "UnionTypeDefinition",
+      name,
+      tags,
+    },
+  };
+}
+
 function findClosingBracket(lines: string[]): number {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
     if (line.trim() === "}") {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+function findClosingSemicolon(lines: string[]): number {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line.endsWith(";")) {
       return i;
     }
   }
@@ -228,6 +271,20 @@ export function parseFile(
         };
       } else {
         blocks.push(parseTypeDefinition(lines.slice(i, i + endLineIndex + 1)));
+        i = i + endLineIndex + 1;
+      }
+    } else if (line.startsWith("union type")) {
+      const endLineIndex = findClosingSemicolon(lines.slice(i, lines.length));
+
+      if (endLineIndex === -1) {
+        return {
+          kind: "Err",
+          value: "Failed to find semicolon for union type definition " + line,
+        };
+      } else {
+        blocks.push(
+          parseUnionTypeDefinition(lines.slice(i, i + endLineIndex + 1))
+        );
         i = i + endLineIndex + 1;
       }
     }

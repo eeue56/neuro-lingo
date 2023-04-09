@@ -1,0 +1,28 @@
+type Cat = {
+    lives: number;
+}
+
+type Dog = {
+    tailWags: number;
+}
+
+union type Animal = Cat | Dog;
+
+function parseCat(line: string): Cat | null {
+    // write a function that parses a line, looking for lives: number
+    // where number is a number
+    // if found, return a Cat object
+    // otherwise return null
+}
+
+function parseDog(line: string): Dog | null {
+    // write a function that parses a line, looking for tailWags: number
+    // where number is a number
+    // if found, return a Dog object
+    // otherwise return null
+}
+
+function parseLine(line: string): Animal | null {
+    // write a function that parses a line into an Animal using parseCat and parseDog
+    // If it does not match either parseCat or parseDog, return null
+}

@@ -6,6 +6,7 @@ import {
   PinnedNeuroFunction,
   Program,
   TypeDefinition,
+  UnionTypeDefinition,
 } from "./parser";
 
 dotenv.config();
@@ -59,6 +60,14 @@ function ${func.name}(${func.args
             content: construct.body,
           };
         }
+        case "UnionTypeDefinition": {
+          return {
+            role: "user",
+            content: `
+type ${construct.name} = ${construct.tags.join(" | ")};
+            `.trim(),
+          };
+        }
       }
     }
   );
@@ -97,6 +106,14 @@ async function generateTypeDefinition(
   return typeDefinition.body;
 }
 
+async function generateUnionTypeDefinition(
+  unionTypeDefinition: UnionTypeDefinition
+): Promise<string> {
+  return `
+type ${unionTypeDefinition.name} = ${unionTypeDefinition.tags.join(" | ")};
+  `.trim();
+}
+
 async function generateConstruct(
   construct: Construct,
   otherBlocks: Construct[]
@@ -110,6 +127,9 @@ async function generateConstruct(
     }
     case "TypeDefinition": {
       return await generateTypeDefinition(construct);
+    }
+    case "UnionTypeDefinition": {
+      return await generateUnionTypeDefinition(construct);
     }
   }
 }
