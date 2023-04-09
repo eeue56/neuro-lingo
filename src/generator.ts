@@ -31,8 +31,9 @@ async function generateNeuroFunction(
   otherBlocks: Construct[]
 ): Promise<string> {
   const prompt = `Auto complete only the TypeScript function called ${func.name} as purely plain TypeScript, no wrapping or explaining text. Only complete the function given and assume others are implemented. Do not wrap the code in markdown. Do not explain the code. Only provide the code for the function ${func.name}. Do not provide the code for other functions or types. Start your response with \`\`\`typescript`;
+  const testWrapping = func.name.startsWith("test") ? "export " : "";
   const content = `
-function ${func.name}(${func.args
+${testWrapping}function ${func.name}(${func.args
     .map((arg) => generateArg(arg.name, arg.type_))
     .join(",")}): ${func.returnType || "void"} {
     // ${func.comment}
