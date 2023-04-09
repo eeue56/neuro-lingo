@@ -28,7 +28,7 @@ function generateNeuroFunctionTypeSignature(func: NeuroFunction): string {
 
 async function generateNeuroFunction(
   func: NeuroFunction,
-  otherBlocks: Construct[]
+  previousBlocks: string[]
 ): Promise<string> {
   const prompt = `Auto complete only the TypeScript function called ${func.name} as purely plain TypeScript, no wrapping or explaining text. Only complete the function given and assume others are implemented. Do not wrap the code in markdown. Do not explain the code. Only provide the code for the function ${func.name}. Do not provide the code for other functions or types. Start your response with \`\`\`typescript`;
   const testWrapping = func.name.startsWith("test") ? "export " : "";
@@ -40,36 +40,12 @@ ${testWrapping}function ${func.name}(${func.args
 }
 `;
 
-  const otherMessages: { role: "user"; content: string }[] = otherBlocks.map(
-    (construct) => {
-      switch (construct.kind) {
-        case "NeuroFunction": {
-          return {
-            role: "user",
-            content: generateNeuroFunctionTypeSignature(construct),
-          };
-        }
-        case "PinnedNeuroFunction": {
-          return {
-            role: "user",
-            content: construct.body,
-          };
-        }
-        case "TypeDefinition": {
-          return {
-            role: "user",
-            content: construct.body,
-          };
-        }
-        case "UnionTypeDefinition": {
-          return {
-            role: "user",
-            content: `
-type ${construct.name} = ${construct.tags.join(" | ")};
-            `.trim(),
-          };
-        }
-      }
+  const otherMessages: { role: "user"; content: string }[] = previousBlocks.map(
+    (block) => {
+      return {
+        role: "user",
+        content: block,
+      };
     }
   );
 
@@ -96,7 +72,7 @@ type ${construct.name} = ${construct.tags.join(" | ")};
 
 async function generatePinnedNeuroFunction(
   func: PinnedNeuroFunction,
-  otherBlocks: Construct[]
+  previousBlocks: string[]
 ): Promise<string> {
   return func.body;
 }
@@ -117,14 +93,14 @@ type ${unionTypeDefinition.name} = ${unionTypeDefinition.tags.join(" | ")};
 
 async function generateConstruct(
   construct: Construct,
-  otherBlocks: Construct[]
+  previousBlocks: string[]
 ): Promise<string> {
   switch (construct.kind) {
     case "NeuroFunction": {
-      return await generateNeuroFunction(construct, otherBlocks);
+      return await generateNeuroFunction(construct, previousBlocks);
     }
     case "PinnedNeuroFunction": {
-      return await generatePinnedNeuroFunction(construct, otherBlocks);
+      return await generatePinnedNeuroFunction(construct, previousBlocks);
     }
     case "TypeDefinition": {
       return await generateTypeDefinition(construct);
@@ -140,11 +116,7 @@ export async function generateProgram(program: Program): Promise<string> {
   const outBlocks: string[] = [];
   let i = 0;
   for (const block of program.blocks) {
-    const otherBlocks: Construct[] = [
-      ...program.blocks.slice(0, i),
-      ...program.blocks.slice(i + 1, program.blocks.length),
-    ];
-    const generatedBlock = await generateConstruct(block, otherBlocks);
+    const generatedBlock = await generateConstruct(block, outBlocks);
     if (
       (block.kind === "NeuroFunction" ||
         block.kind === "PinnedNeuroFunction") &&
