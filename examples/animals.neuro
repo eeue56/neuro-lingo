@@ -26,3 +26,7 @@ function parseLine(line: string): Animal | null {
     // write a function that parses a line into an Animal using parseCat and parseDog
     // If it does not match either parseCat or parseDog, return null
 }
+
+function testParseLine() {
+    // write a function that will test parseLine for edge cases using node's assert module
+}
