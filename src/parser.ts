@@ -141,7 +141,7 @@ function parseUnionTypeDefinition(
     .slice(1, splitOnAssign.length)
     .join("=")
     .split("|")
-    .map((tag) => tag.trim());
+    .map((tag) => tag.replace(";", "").trim());
   return {
     kind: "Ok",
     value: {

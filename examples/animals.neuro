@@ -6,23 +6,35 @@ type Dog = {
     tailWags: number;
 }
 
+type Error<error> = {
+    kind: "Error";
+    value: error;
+}
+
+type Ok<ok> = {
+    kind: "Ok";
+    value: ok;
+}
+
+union type Result<error, ok> = Error<error> | Ok<ok>;
+
 union type Animal = Cat | Dog;
 
-function parseCat(line: string): Cat | null {
+function parseCat(line: string): Result<string, Cat> {
     // write a function that parses a line, looking for lives: number
     // where number is a number
     // if found, return a Cat object
     // otherwise return null
 }
 
-function parseDog(line: string): Dog | null {
+function parseDog(line: string): Result<string, Dog> {
     // write a function that parses a line, looking for tailWags: number
     // where number is a number
     // if found, return a Dog object
     // otherwise return null
 }
 
-function parseLine(line: string): Animal | null {
+function parseLine(line: string): Result<string, Animal> {
     // write a function that parses a line into an Animal using parseCat and parseDog
     // If it does not match either parseCat or parseDog, return null
 }
