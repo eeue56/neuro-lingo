@@ -1,4 +1,5 @@
 import {
+  allErrors,
   bothFlag,
   empty,
   help,
@@ -16,6 +17,7 @@ import { parseFile } from "./parser";
 const cliParser = parser([
   longFlag("file", "The filename to compile ", string()),
   longFlag("quiet", "Avoid writing non-esstential output to terminal", empty()),
+  longFlag("output", "An output file location", string()),
   bothFlag("h", "help", "This help text", empty()),
   longFlag("run", "Run the file after generating it", empty()),
 ]);
@@ -35,6 +37,13 @@ async function main() {
     console.log(help(cliParser));
     return;
   }
+
+  if (allErrors(cliProgram).length > 0) {
+    console.log("Error");
+    console.log(allErrors(cliProgram).join("\n"));
+    return;
+  }
+
   const fileNameFlag = cliProgram.flags["file"];
 
   if (!fileNameFlag.isPresent || fileNameFlag.arguments.kind === "Err") {
@@ -43,12 +52,22 @@ async function main() {
   }
 
   const fileName: string = (fileNameFlag.arguments.value as string) || "";
-  const outputFileName = "build/" + path.basename(fileName) + ".ts";
+  const providedOutputFileName =
+    cliProgram.flags["output"].isPresent &&
+    cliProgram.flags["output"].arguments.kind === "Ok"
+      ? (cliProgram.flags["output"].arguments.value as string)
+      : null;
+  const outputFileName =
+    providedOutputFileName === null
+      ? "build/" + path.basename(fileName) + ".ts"
+      : providedOutputFileName;
 
   const contents = await readFile(fileName, "utf-8");
   let generatedContents = "";
   try {
-    generatedContents = await readFile(outputFileName, "utf-8");
+    if (outputFileName !== "/dev/stdout") {
+      generatedContents = await readFile(outputFileName, "utf-8");
+    }
   } catch (e) {}
   const program = parseFile(contents, generatedContents);
 
@@ -73,7 +92,12 @@ async function main() {
   if (!cliProgram.flags["quiet"].isPresent) {
     console.log("Writing to", outputFileName);
   }
-  await writeFile(`${outputFileName}`, code);
+
+  if (outputFileName === "/dev/stdout") {
+    console.log(code);
+  } else {
+    await writeFile(`${outputFileName}`, code);
+  }
 
   if (cliProgram.flags["run"].isPresent) {
     if (!cliProgram.flags["quiet"].isPresent) {
