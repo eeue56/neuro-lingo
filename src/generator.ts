@@ -2,6 +2,7 @@ import * as dotenv from "dotenv";
 import { openai } from "./OpenAi";
 import {
   Construct,
+  Export,
   NeuroFunction,
   PinnedNeuroFunction,
   Program,
@@ -15,22 +16,11 @@ function generateArg(name: string, type_: string): string {
   return `${name}: ${type_}`;
 }
 
-function generateNeuroFunctionTypeSignature(func: NeuroFunction): string {
-  if (func.args.length === 0) {
-    return `function ${func.name}(): ${func.returnType || "void"} {
-}`;
-  }
-  return `function ${func.name}(${func.args
-    .map((arg) => generateArg(arg.name, arg.type_))
-    .join(",")}): ${func.returnType || "void"} {
-}`;
-}
-
 async function generateNeuroFunction(
   func: NeuroFunction,
   previousBlocks: string[]
 ): Promise<string> {
-  const prompt = `Auto complete only the TypeScript function called ${func.name} as purely plain TypeScript, no wrapping or explaining text. Only complete the function given and assume others are implemented. Do not wrap the code in markdown. Do not explain the code. Only provide the code for the function ${func.name}. Do not provide the code for other functions or types. Start your response with \`\`\`typescript`;
+  const prompt = `Auto complete only the TypeScript function called ${func.name} as purely plain TypeScript, no wrapping or explaining text. Only complete the function given and assume others are implemented. Do not wrap the code in markdown. Do not explain the code. Only provide the code for the function ${func.name}. Do not provide the code for other functions or types. Make sure the code is well-typed. Start your response with \`\`\`typescript`;
   const testWrapping = func.name.startsWith("test") ? "export " : "";
   const content = `
 ${testWrapping}function ${func.name}(${func.args
@@ -91,6 +81,12 @@ type ${unionTypeDefinition.name} = ${unionTypeDefinition.tags.join(" | ")};
   `.trim();
 }
 
+async function generateExport(export_: Export): Promise<string> {
+  return `
+export { ${export_.exports.join(", ")} };
+  `.trim();
+}
+
 async function generateConstruct(
   construct: Construct,
   previousBlocks: string[]
@@ -107,6 +103,9 @@ async function generateConstruct(
     }
     case "UnionTypeDefinition": {
       return await generateUnionTypeDefinition(construct);
+    }
+    case "Export": {
+      return await generateExport(construct);
     }
   }
 }

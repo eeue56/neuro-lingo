@@ -32,11 +32,17 @@ export type UnionTypeDefinition = {
   tags: string[];
 };
 
+export type Export = {
+  kind: "Export";
+  exports: string[];
+};
+
 export type Construct =
   | NeuroFunction
   | PinnedNeuroFunction
   | TypeDefinition
-  | UnionTypeDefinition;
+  | UnionTypeDefinition
+  | Export;
 
 export type Ok<value> = {
   kind: "Ok";
@@ -148,6 +154,19 @@ function parseUnionTypeDefinition(
       kind: "UnionTypeDefinition",
       name,
       tags,
+    },
+  };
+}
+
+function parseExport(line: string): ParsingResult<Export, string> {
+  const split = line.split("export");
+  const withoutExportKeyword = split.slice(1, split.length).join("export");
+
+  return {
+    kind: "Ok",
+    value: {
+      kind: "Export",
+      exports: withoutExportKeyword.split(",").map((name) => name.trim()),
     },
   };
 }
@@ -287,11 +306,12 @@ export function parseFile(
         );
         i = i + endLineIndex + 1;
       }
+    } else if (line.startsWith("export")) {
+      blocks.push(parseExport(line));
     }
   }
 
   if (blocks.filter((block) => block.kind === "Err").length > 0) {
-    console.log(blocks);
     return {
       kind: "Err",
       value: blocks
