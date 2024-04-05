@@ -1,6 +1,6 @@
 # neuro-lingo
 
-A language where you only implement comments and types, and let LLMs deal with the rest. LLMs don't always provide workable examples, so your comments need to really match what you're trying to implement.
+A language where you only implement comments and types, and let LLMs deal with the rest. LLMs don't always provide workable examples, so your comments need to really match what you're trying to implement. I [wrote about this on Derw's blog](https://derw.substack.com/p/introducing-neuro-lingo-a-llm-powered).
 
 ## Filenames
 
